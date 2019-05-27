@@ -79,7 +79,36 @@ SELECT count(pg_stat_activity.pid) AS number_of_queries,
            granted
   ORDER BY max_wait_time DESC;
 ```
-
+### current_queries_status_with_locks (pg11)
+SELECT count(pg_stat_activity.pid) AS number_of_queries,
+       substring(trim(LEADING
+                      FROM regexp_replace(pg_stat_activity.query, '[\n\r]+'::text,
+                       ' '::text, 'g'::text))
+                 FROM 0
+                 FOR 200) AS query_name,
+       max(age(CURRENT_TIMESTAMP, query_start)) AS max_wait_time,
+       pg_stat_activity.wait_event,
+       usename,
+       locktype,
+       mode,
+       granted,
+       state
+  FROM pg_stat_activity
+  LEFT JOIN pg_locks ON pg_stat_activity.pid = pg_locks.pid
+  WHERE
+        query NOT ilike '%IDLE%'
+    and query not ilike '%VACUUM%'
+    AND query NOT ILIKE '%pg_%' AND query NOT ILIKE '%application_name%' AND query NOT ILIKE '%inet%'
+    AND age(CURRENT_TIMESTAMP, query_start) > '5 milliseconds'::interval
+    AND state ilike  '%active%'
+  GROUP BY query_name,
+           wait_event,
+           usename,
+           locktype,
+           mode,
+           granted,
+           state
+  ORDER BY max_wait_time DESC;
 ### query_stats
 ```sql
 PREPARE query_stats AS
