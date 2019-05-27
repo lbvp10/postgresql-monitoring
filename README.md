@@ -2,6 +2,7 @@
 
 These have been compiled from multiple sources like the [postgresql wiki](https://wiki.postgresql.org/wiki/Main_Page), and [check_postgres](https://bucardo.org/wiki/Check_postgres).
 
+[The Statistics Collector](https://www.postgresql.org/docs/current/monitoring-stats.html)
 ## Usage
 These `PREPARE`d statements are essentially queries with names (and 0 arguments) for convenience. Once you have executed a `PREPARE`, you can run it using `EXECUTE` like so:
 
